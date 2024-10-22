@@ -1,6 +1,6 @@
 import sys
 
-# Matriz da cifra ADFGVX (6x6), usando letras e digitos
+# Matriz da cifra ADFGVX (6x6), usando letras e dígitos
 MATRIZ_ADFGVX = [
     ['A', 'B', 'C', 'D', 'E', 'F'],
     ['G', 'H', 'I', 'J', 'K', 'L'],
@@ -13,29 +13,25 @@ MATRIZ_ADFGVX = [
 LETTERS = ['A', 'D', 'F', 'G', 'V', 'X']
 
 def inverter_chave(chave):
-    """Retorna a ordem original da transposicao com base na chave."""
+    """Retorna a ordem original da transposição com base na chave."""
     return sorted(range(len(chave)), key=lambda k: chave[k])
 
 def destranspor(texto, chave):
-    """Reverte a transposicao com base na chave."""
+    """Reverte a transposição com base na chave."""
     colunas = len(chave)
     linhas = len(texto) // colunas
 
-    # Verificar se a ultima linha esta incompleta
     sobra = len(texto) % colunas
 
-    # Obter a ordem das colunas na transposicao
     indices = inverter_chave(chave)
     matriz = [''] * colunas
 
     posicao = 0
     for i, indice in enumerate(indices):
-        # Distribuir os caracteres nas colunas, considerando a sobra
         num_linhas = linhas + 1 if i < sobra else linhas
         matriz[indice] = texto[posicao:posicao + num_linhas]
         posicao += num_linhas
 
-    # Reconstruir o texto por leitura em ordem de linhas
     return ''.join(''.join(linha) for linha in zip(*matriz))
 
 def encontrar_char(linha, coluna):
@@ -43,7 +39,7 @@ def encontrar_char(linha, coluna):
     return MATRIZ_ADFGVX[linha][coluna]
 
 def reverter_substituicao(texto):
-    """Reverte a substituicao da matriz ADFGVX."""
+    """Reverte a substituição da matriz ADFGVX."""
     resultado = ""
     i = 0
     while i < len(texto) - 1:
@@ -61,36 +57,38 @@ def decifrar(entrada, saida, chave):
     with open(entrada, 'r') as f:
         texto_cifrado = f.read().strip()
 
-    # Ler o numero de padding do final
+    # Verificar se o último caractere é número (padding)
+    if not texto_cifrado[-1].isdigit():
+        raise ValueError("O texto cifrado não contém um padding válido.")
+    
     padding = int(texto_cifrado[-1])
-    texto_cifrado = texto_cifrado[:-1]  # Remover o numero de padding
+    texto_cifrado = texto_cifrado[:-1]
 
-    # Verificar se o texto tem um numero par de caracteres
     if len(texto_cifrado) % 2 != 0:
-        raise ValueError("O texto cifrado nao tem um numero par de caracteres.")
+        raise ValueError("O texto cifrado não tem um número par de caracteres após remoção do padding.")
 
-    # Desfazer a transposicao
     transposto = destranspor(texto_cifrado, chave)
 
-    # Remover padding se for detectado corretamente
     if padding > 0:
         transposto = transposto[:-padding]
 
-    # Reverter a substituicao usando a matriz ADFGVX
     texto_decifrado = reverter_substituicao(transposto)
 
-    # # Debug: Verificar variaveis intermediarias
-    # print(f"Texto cifrado (apos remover padding): {texto_cifrado}")
-    # print(f"Texto transposto: {transposto}")
-    # print(f"Texto decifrado (antes de remover padding): {texto_decifrado}")
-
-    # Escrever a saida
     with open(saida, 'w') as f:
         f.write(texto_decifrado)
 
-
 if __name__ == "__main__":
+    if len(sys.argv) != 4:
+        print("Uso: python decrypt.py <entrada> <saida> <chave>")
+        sys.exit(1)
+
     entrada = sys.argv[1]
     saida = sys.argv[2]
     chave = sys.argv[3]
-    decifrar(entrada, saida, chave)
+
+    try:
+        decifrar(entrada, saida, chave)
+        print("Decifração concluída com sucesso!")
+    except Exception as e:
+        print(f"Erro: {e}")
+        sys.exit(1)
