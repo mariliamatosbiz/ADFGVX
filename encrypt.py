@@ -1,6 +1,6 @@
 import sys
 
-# Matriz da cifra ADFGVX (6x6), usando letras e digitos
+# Matriz da cifra ADFGVX (6x6), usando letras e dígitos
 MATRIZ_ADFGVX = [
     ['A', 'B', 'C', 'D', 'E', 'F'],
     ['G', 'H', 'I', 'J', 'K', 'L'],
@@ -12,58 +12,64 @@ MATRIZ_ADFGVX = [
 
 LETTERS = ['A', 'D', 'F', 'G', 'V', 'X']
 
+# Defina a chave fixa
+CHAVE = "EXEMPLO"
+
 def encontrar_posicao(char):
-    """Retorna a posicao da letra na matriz."""
     for i, linha in enumerate(MATRIZ_ADFGVX):
         if char in linha:
             return i, linha.index(char)
-    raise ValueError(f"Caractere '{char}' nao encontrado na matriz.")
+    raise ValueError(f"Caractere '{char}' não encontrado na matriz.")
 
 def substituir(texto):
-    """Realiza a substituicao usando a matriz ADFGVX."""
     resultado = ""
     for char in texto.upper():
-        if char.isspace():  # Preservar espacos
+        if char.isspace():
             resultado += " "
         elif char.isalnum():
             linha, coluna = encontrar_posicao(char)
             resultado += LETTERS[linha] + LETTERS[coluna]
     return resultado
 
-def transpor(texto, chave):
-    """Realiza a transposicao das colunas com base na chave."""
-    colunas = sorted((chave[i], i) for i in range(len(chave)))
-    texto_matriz = [texto[i:i + len(chave)] for i in range(0, len(texto), len(chave))]
+def transpor(texto):
+    colunas = sorted((CHAVE[i], i) for i in range(len(CHAVE)))
+    texto_matriz = [texto[i:i + len(CHAVE)] for i in range(0, len(texto), len(CHAVE))]
 
-    # Preencher a ultima linha, se necessario
     ultimo_tamanho = len(texto_matriz[-1])
-    padding = len(chave) - ultimo_tamanho
+    padding = len(CHAVE) - ultimo_tamanho
     if padding > 0:
-        texto_matriz[-1] += 'X' * padding  # 'X' como caractere de preenchimento
+        texto_matriz[-1] += 'X' * padding
 
-    # Transpor as colunas
     transposto = ""
     for _, indice in colunas:
         for linha in texto_matriz:
             if indice < len(linha):
                 transposto += linha[indice]
 
-    # Adiciona o numero de caracteres de padding ao final
-    transposto += str(padding)
+    transposto += str(padding)  # Adicionar padding ao final
     return transposto
 
-def cifrar(entrada, saida, chave):
+def cifrar(entrada, saida):
     with open(entrada, 'r') as f:
-        texto_claro = f.read()
+        texto_claro = f.read().strip()  # Remover espaços extras
 
     substituido = substituir(texto_claro)
-    texto_cifrado = transpor(substituido, chave)
+    texto_cifrado = transpor(substituido)
 
     with open(saida, 'w') as f:
         f.write(texto_cifrado)
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Uso: python encrypt.py <entrada> <saida>")
+        sys.exit(1)
+
     entrada = sys.argv[1]
     saida = sys.argv[2]
-    chave = sys.argv[3]
-    cifrar(entrada, saida, chave)
+
+    try:
+        cifrar(entrada, saida)
+        print("Cifragem concluída com sucesso!")
+    except Exception as e:
+        print(f"Erro: {e}")
+        sys.exit(1)

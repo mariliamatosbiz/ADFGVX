@@ -12,18 +12,16 @@ MATRIZ_ADFGVX = [
 
 LETTERS = ['A', 'D', 'F', 'G', 'V', 'X']
 
-def inverter_chave(chave):
-    """Retorna a ordem original da transposição com base na chave."""
-    return sorted(range(len(chave)), key=lambda k: chave[k])
+CHAVE = "EXEMPLO"
 
-def destranspor(texto, chave):
-    """Reverte a transposição com base na chave."""
-    colunas = len(chave)
+def inverter_chave():
+    return sorted(range(len(CHAVE)), key=lambda k: CHAVE[k])
+
+def destranspor(texto):
+    colunas = len(CHAVE)
     linhas = len(texto) // colunas
-
     sobra = len(texto) % colunas
-
-    indices = inverter_chave(chave)
+    indices = inverter_chave()
     matriz = [''] * colunas
 
     posicao = 0
@@ -34,12 +32,7 @@ def destranspor(texto, chave):
 
     return ''.join(''.join(linha) for linha in zip(*matriz))
 
-def encontrar_char(linha, coluna):
-    """Encontra o caractere correspondente na matriz."""
-    return MATRIZ_ADFGVX[linha][coluna]
-
 def reverter_substituicao(texto):
-    """Reverte a substituição da matriz ADFGVX."""
     resultado = ""
     i = 0
     while i < len(texto) - 1:
@@ -49,25 +42,24 @@ def reverter_substituicao(texto):
         else:
             linha = LETTERS.index(texto[i])
             coluna = LETTERS.index(texto[i + 1])
-            resultado += encontrar_char(linha, coluna)
+            resultado += MATRIZ_ADFGVX[linha][coluna]
             i += 2
     return resultado
 
-def decifrar(entrada, saida, chave):
+def decifrar(entrada, saida):
     with open(entrada, 'r') as f:
         texto_cifrado = f.read().strip()
 
-    # Verificar se o último caractere é número (padding)
     if not texto_cifrado[-1].isdigit():
         raise ValueError("O texto cifrado não contém um padding válido.")
-    
+
     padding = int(texto_cifrado[-1])
     texto_cifrado = texto_cifrado[:-1]
 
     if len(texto_cifrado) % 2 != 0:
         raise ValueError("O texto cifrado não tem um número par de caracteres após remoção do padding.")
 
-    transposto = destranspor(texto_cifrado, chave)
+    transposto = destranspor(texto_cifrado)
 
     if padding > 0:
         transposto = transposto[:-padding]
@@ -78,16 +70,15 @@ def decifrar(entrada, saida, chave):
         f.write(texto_decifrado)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Uso: python decrypt.py <entrada> <saida> <chave>")
+    if len(sys.argv) != 3:
+        print("Uso: python decrypt.py <entrada> <saida>")
         sys.exit(1)
 
     entrada = sys.argv[1]
     saida = sys.argv[2]
-    chave = sys.argv[3]
 
     try:
-        decifrar(entrada, saida, chave)
+        decifrar(entrada, saida)
         print("Decifração concluída com sucesso!")
     except Exception as e:
         print(f"Erro: {e}")
